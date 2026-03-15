@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Boef Control Panel PRO</title>
+<style>
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Courier New', monospace;background:#0b1220;color:white;}
+.wrapper{display:grid;grid-template-columns:240px 1fr;height:100vh;}
+.sidebar{background:#060c18;border-right:1px solid #1e293b;padding:20px;}
+.logo{font-size:22px;font-weight:bold;margin-bottom:30px;color:#0ff;}
+.menu button{width:100%;padding:12px;margin-bottom:8px;background:#0f172a;border:none;color:#0ff;border-radius:6px;cursor:pointer;font-weight:bold;}
+.menu button:hover{background:#1e293b;color:#22c55e;}
+.main{display:flex;flex-direction:column;height:100vh;}
+.header{background:#060c18;padding:15px 25px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center;font-family:'Courier New', monospace;}
+.money{color:#22c55e;font-weight:bold;}
+.content{padding:25px;overflow:auto;}
+.page{display:none;}
+.page.active{display:block;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:25px;}
+.stat{background:#1e293b;padding:15px;border-radius:8px;border:1px solid #22c55e;}
+.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.card{background:#1e293b;padding:20px;border-radius:10px;box-shadow:0 10px 20px rgba(0,0,0,0.3);}
+.card.loop:hover{transform: translateY(-5px);box-shadow:0 15px 25px rgba(0,255,255,0.5);transition: all 0.3s ease;}
+.card.category{cursor:pointer;text-align:center;padding:40px;font-size:18px;font-weight:bold;transition:all 0.3s ease;}
+.card.category:hover{background:#1e293b;transform:scale(1.05);}
+button{border:none;padding:8px 12px;border-radius:5px;cursor:pointer;margin-top:5px;}
+.start{background:#22c55e;color:white;}
+.stop{background:#ef4444;color:white;}
+.barbg{height:8px;background:#334155;border-radius:5px;margin-top:10px;}
+.bar{height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:5px;transition:width 0.1s linear;}
+.input-block{margin-bottom:10px;background:#1e293b;padding:10px;border-radius:8px;display:flex;align-items:center;gap:10px;}
+input[type=number]{width:60px;padding:5px;border-radius:5px;border:none;background:#0f172a;color:white;text-align:center;}
+input[type=text]{width:120px;padding:5px;border-radius:5px;border:none;background:#0f172a;color:white;}
+label{font-size:14px;}
+.countdown{color:#22c55e;font-weight:bold;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="sidebar">
+    <div class="logo">BOEF PANEL PRO</div>
+    <div class="menu">
+      <button onclick="showPage('dashboard')">Dashboard</button>
+      <button onclick="showPage('loops')">Loops</button>
+      <button onclick="showPage('stats')">Statistieken</button>
+      <button onclick="showPage('settings')">Settings</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="header">
+      <div>Welkom bij de loop management system PRO</div>
+      <span id="clock"></span>
+      <div class="money">Made by Kermit</div>
+    </div>
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div id="dashboard" class="page active">
+        <div class="stats">
+          <div class="stat">Loop Manager PRO<br><b>v2.0</b></div>
+          <div class="stat">Aantal loops<br><b>Unlimited</b></div>
+          <div class="stat">Gratis loops<br><b>Unlimited</b></div>
+          <div class="stat">Gemaakt door<br><b>Kermit</b></div>
+        </div>
+        <div class="dashboard">
+          <div class="card"><h3>Server Status</h3><p>Online 🟢</p></div>
+          <div class="card"><h3>Loops actief</h3><p id="activeLoops">0</p></div>
+          <div class="card"><h3>Aantal loops per minuut</h3><p id="rpm">0</p></div>
+          <div class="card"><h3>Windows open</h3><p id="windows">0</p></div>
+        </div>
+      </div>
+
+      <!-- LOOPS -->
+      <div id="loops" class="page">
+        <h2>Kies een categorie</h2>
+        <div id="loopCategories" class="dashboard">
+          <div class="card category" onclick="showCategory('cat1')">Attack Loops</div>
+          <div class="card category" onclick="showCategory('cat2')">Kechs Loops</div>
+          <div class="card category" onclick="showCategory('cat3')">Misdaad loops</div>
+          <div class="card category" onclick="showCategory('cat4')">Custom Loops</div>
+        </div>
+        <div id="categoryLoops" style="display:none;"></div>
+      </div>
+
+      <!-- STATS -->
+      <div id="stats" class="page">
+        <h2>Statistieken</h2>
+        <div class="card">
+          <canvas id="statsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="settings" class="page">
+        <h2>Settings</h2>
+        <div class="card"><p>Configuratie opties.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Klok
+function startClock(){
+  function updateClock(){
+    const now=new Date();
+    const h=String(now.getHours()).padStart(2,'0');
+    const m=String(now.getMinutes()).padStart(2,'0');
+    const s=String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').innerText=`${h}:${m}:${s}`;
+    requestAnimationFrame(updateClock);
+  }
+  updateClock();
+}
+startClock();
+
+// Navigatie
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  if(id==='loops'){
+    document.getElementById("loopCategories").style.display="grid";
+    document.getElementById("categoryLoops").style.display="none";
+  }
+}
+
+// Loop data – 4 loops per categorie
+const categories={
+  cat1:[
+    {name:"Attack Loop 1", sites:["https://boef.nl/attack1","https://boef.nl/attack2"]},
+    {name:"Attack Loop 2", sites:["https://boef.nl/attack3","https://boef.nl/attack4"]},
+    {name:"Attack Loop 3", sites:["https://boef.nl/attack5","https://boef.nl/attack6"]},
+    {name:"Attack Loop 4", sites:["https://boef.nl/attack7","https://boef.nl/attack8"]}
+  ],
+  cat2:[
+    {name:"Kech Loop 1", sites:["https://boef.nl/kech1","https://boef.nl/kech2"]},
+    {name:"Kech Loop 2", sites:["https://boef.nl/kech3","https://boef.nl/kech4"]},
+    {name:"Kech Loop 3", sites:["https://boef.nl/kech5","https://boef.nl/kech6"]},
+    {name:"Kech Loop 4", sites:["https://boef.nl/kech7","https://boef.nl/kech8"]}
+  ],
+  cat3:[
+    {name:"Misdaad Loop 1", sites:["https://boef.nl/mis1","https://boef.nl/mis2"]},
+    {name:"Misdaad Loop 2", sites:["https://boef.nl/mis3","https://boef.nl/mis4"]},
+    {name:"Misdaad Loop 3", sites:["https://boef.nl/mis5","https://boef.nl/mis6"]},
+    {name:"Misdaad Loop 4", sites:["https://boef.nl/mis7","https://boef.nl/mis8"]}
+  ],
+  cat4:[
+    {name:"Custom Loop 1", sites:[]}
+  ]
+};
+
+let categoryPopups={};
+let categoryTimers={};
+let categoryIndexes={};
+let bars={};
+let autoOpenTimers={};
+let countdownIntervals={};
+
+// Toon categorie loops
+function showCategory(catId){
+  document.getElementById("loopCategories").style.display="none";
+  const container=document.getElementById("categoryLoops");
+  container.style.display="grid";
+  container.style.gridTemplateColumns="repeat(2,1fr)";
+  container.style.gap="15px";
+  container.innerHTML="";
+  const loopsInCat=categories[catId];
+  loopsInCat.forEach((loop,i)=>{
+    const div=document.createElement("div");
+    div.className="card loop";
+
+    let html=`
+      <div class="input-block">
+        <label>Refresh tijd (sec)</label>
+        <input type="number" id="duration${catId}${i}" value="5" min="1">
+      </div>
+      <button class="start" onclick="startCategoryLoop('${catId}',${i})">Start</button>
+      <button class="stop" onclick="stopCategoryLoop('${catId}',${i})">Stop</button>
+      <div class="barbg"><div class="bar" id="cat${catId}bar${i}"></div></div>
+      <h3>${loop.name}</h3>
+    `;
+
+    if(catId==='cat4'){
+      html=`
+        <div class="input-block">
+          <label>Voer URL in</label>
+          <input type="text" id="customURL${i}" placeholder="https://example.com">
+          <button class="start" onclick="addCustomURL(${i})">Toevoegen</button>
+        </div>
+        <div class="input-block">
+          <label>Open automatisch om (HH:MM:SS)</label>
+          <input type="text" id="autoOpenTime${i}" placeholder="08:30:15">
+          <label>Auto-typ (selector|waarde)</label>
+          <input type="text" id="autoType${i}" placeholder="#idInput|1234">
+          <button class="start" onclick="setAutoOpen(${i})">Instellen</button>
+          <span class="countdown" id="countdown${i}"></span>
+        </div>
+      `+html;
+    }
+
+    div.innerHTML=html;
+    container.appendChild(div);
+    bars[`cat${catId}${i}`]=document.getElementById(`cat${catId}bar${i}`);
+  });
+}
+
+// Voeg Custom URL toe
+function addCustomURL(i){
+  const url=document.getElementById(`customURL${i}`).value;
+  if(!url) return alert("Voer een URL in!");
+  categories['cat4'][i].sites.push(url);
+  alert("URL toegevoegd!");
+}
+
+// Start/stop loops
+function startCategoryLoop(catId,i){
+  const loop=categories[catId][i];
+  if(!categoryIndexes[`${catId}${i}`]) categoryIndexes[`${catId}${i}`]=0;
+  if(!categoryPopups[`${catId}${i}`] || categoryPopups[`${catId}${i}`].closed){
+    if(loop.sites.length===0) return alert("Geen URL’s ingesteld!");
+    categoryPopups[`${catId}${i}`]=window.open(loop.sites[0],"_blank","width=1200,height=800");
+  }
+  let duration=parseInt(document.getElementById(`duration${catId}${i}`).value)*1000;
+  let startTime=Date.now();
+  function rotate(){
+    let elapsed=Date.now()-startTime;
+    let bar=bars[`cat${catId}${i}`];
+    let percent=Math.min((elapsed/duration)*100,100);
+    bar.style.width=percent+"%";
+    if(elapsed>=duration){
+      categoryIndexes[`${catId}${i}`]=(categoryIndexes[`${catId}${i}`]+1)%loop.sites.length;
+      try{categoryPopups[`${catId}${i}`].location.href=loop.sites[categoryIndexes[`${catId}${i}`]];}catch(e){}
+      startTime=Date.now();
+    }
+    categoryTimers[`${catId}${i}`]=requestAnimationFrame(rotate);
+  }
+  rotate();
+}
+
+function stopCategoryLoop(catId,i){
+  cancelAnimationFrame(categoryTimers[`${catId}${i}`]);
+  let bar=bars[`cat${catId}${i}`];
+  if(bar) bar.style.width="0%";
+  if(autoOpenTimers[i]) clearTimeout(autoOpenTimers[i]);
+  if(countdownIntervals[i]) clearInterval(countdownIntervals[i]);
+  document.getElementById(`countdown${i}`).innerText="";
+}
+
+// Auto-open met auto-type
+function setAutoOpen(i){
+  const timeInput=document.getElementById(`autoOpenTime${i}`).value;
+  if(!timeInput) return alert("Selecteer een tijd!");
+  const parts=timeInput.split(":").map(Number);
+  if(parts.length!==3) return alert("Gebruik HH:MM:SS");
+  const [hours,minutes,seconds]=parts;
+  const autoTypeInput=document.getElementById(`autoType${i}`).value;
+
+  if(autoOpenTimers[i]) clearTimeout(autoOpenTimers[i]);
+  if(countdownIntervals[i]) clearInterval(countdownIntervals[i]);
+
+  function updateCountdown(){
+    const now=new Date();
+    let target=new Date();
+    target.setHours(hours,minutes,seconds,0);
+    if(target<now) target.setDate(target.getDate()+1);
+    let diff=Math.max(0,Math.floor((target-now)/1000));
+    const h=String(Math.floor(diff/3600)).padStart(2,'0');
+    const m=String(Math.floor((diff%3600)/60)).padStart(2,'0');
+    const s=String(diff%60).padStart(2,'0');
+    document.getElementById(`countdown${i}`).innerText=` (${h}:${m}:${s})`;
+    if(diff<=0){
+      const loop=categories['cat4'][i];
+      if(loop.sites.length>0){
+        const win=window.open(loop.sites[0],"_blank","width=1200,height=800");
+        if(autoTypeInput){
+          try{
+            const [selector,value]=autoTypeInput.split("|");
+            win.onload=()=>{win.document.querySelector(selector).value=value;}
+          }catch(e){}
+        }
+      }
+      clearInterval(countdownIntervals[i]);
+      document.getElementById(`countdown${i}`).innerText="";
+    }
+  }
+
+  updateCountdown();
+  countdownIntervals[i]=setInterval(updateCountdown,1000);
+  alert(`Auto open ingesteld om ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`);
+}
+
+// Grafiek voorbeeld
+const ctx=document.getElementById('statsChart').getContext('2d');
+const chart=new Chart(ctx,{
+  type:'bar',
+  data:{
+    labels:['Loops actief','Rpm','Windows open'],
+    datasets:[{
+      label:'Statistieken',
+      data:[0,0,0],
+      backgroundColor:['#22c55e','#0ff','#ef4444']
+    }]
+  },
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+});
+</script>
+</body>
+</html>
