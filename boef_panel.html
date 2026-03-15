@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Boef Control Panel PRO</title>
+<title>Boef Control Dashboard</title>
 <style>
 *{box-sizing:border-box;}
 body{margin:0;font-family:'Courier New', monospace;background:#0b1220;color:white;}
@@ -39,17 +39,17 @@ label{font-size:14px;}
 <body>
 <div class="wrapper">
   <div class="sidebar">
-    <div class="logo">BOEF PANEL PRO</div>
+    <div class="logo">BOEF Control Dashboard</div>
     <div class="menu">
       <button onclick="showPage('dashboard')">Dashboard</button>
-      <button onclick="showPage('loops')">Loops</button>
+      <button onclick="showPage('loops')">Tools</button>
       <button onclick="showPage('stats')">Statistieken</button>
       <button onclick="showPage('settings')">Settings</button>
     </div>
   </div>
   <div class="main">
     <div class="header">
-      <div>Welkom bij de loop management system PRO</div>
+      <div>Welkom bij de Boef Control Dashboard</div>
       <span id="clock"></span>
       <div class="money">Made by Kermit</div>
     </div>
@@ -57,15 +57,15 @@ label{font-size:14px;}
       <!-- DASHBOARD -->
       <div id="dashboard" class="page active">
         <div class="stats">
-          <div class="stat">Loop Manager PRO<br><b>v2.0</b></div>
-          <div class="stat">Aantal loops<br><b>Unlimited</b></div>
+          <div class="stat">Tools Manager PRO<br><b>v2.0</b></div>
+          <div class="stat">Aantal Tools<br><b>8</b></div>
           <div class="stat">Laatst geupdate<br><b>15-03-2026</b></div>
           <div class="stat">Gemaakt door<br><b>Kermit</b></div>
         </div>
         <div class="dashboard">
           <div class="card"><h3>Server Status</h3><p>Online 🟢</p></div>
-          <div class="card"><h3>Loops actief</h3><p id="activeLoops">0</p></div>
-          <div class="card"><h3>Aantal loops per minuut</h3><p id="rpm">0</p></div>
+          <div class="card"><h3>Tools actief</h3><p id="activeLoops">0</p></div>
+          <div class="card"><h3>Aantal tools per minuut</h3><p id="rpm">0</p></div>
           <div class="card"><h3>Windows open</h3><p id="windows">0</p></div>
         </div>
       </div>
@@ -74,10 +74,10 @@ label{font-size:14px;}
       <div id="loops" class="page">
         <h2>Kies een categorie</h2>
         <div id="loopCategories" class="dashboard">
-          <div class="card category" onclick="showCategory('cat1')">Attack Loops</div>
-          <div class="card category" onclick="showCategory('cat2')">Kechs Loops</div>
-          <div class="card category" onclick="showCategory('cat3')">Misdaad loops</div>
-          <div class="card category" onclick="showCategory('cat4')">Custom Loops</div>
+          <div class="card category" onclick="showCategory('cat1')">Attack Tools</div>
+          <div class="card category" onclick="showCategory('cat2')">Kechs Tools</div>
+          <div class="card category" onclick="showCategory('cat3')">Misdaad Tools</div>
+          <div class="card category" onclick="showCategory('cat4')">Custom Tools</div>
         </div>
         <div id="categoryLoops" style="display:none;"></div>
       </div>
