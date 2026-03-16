@@ -34,9 +34,28 @@ input[type=number]{width:60px;padding:5px;border-radius:5px;border:none;backgrou
 input[type=text]{width:120px;padding:5px;border-radius:5px;border:none;background:#0f172a;color:white;}
 label{font-size:14px;}
 .countdown{color:#22c55e;font-weight:bold;}
+
+/* LOGIN OVERLAY */
+#loginOverlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(11,18,32,0.95);display:flex;justify-content:center;align-items:center;z-index:9999;flex-direction:column;
+}
+#loginOverlay h2{color:#0ff;margin-bottom:20px;font-size:28px;}
+#loginOverlay input{padding:12px 15px;font-size:16px;border-radius:8px;border:none;margin-bottom:10px;width:250px;background:#0f172a;color:white;}
+#loginOverlay button{padding:12px 20px;font-size:16px;border-radius:8px;border:none;background:#22c55e;color:white;cursor:pointer;transition:all 0.3s;}
+#loginOverlay button:hover{background:#16a34a;}
+#loginOverlay .error{color:#ef4444;margin-top:10px;}
 </style>
 </head>
 <body>
+
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay">
+  <h2>Voer Wachtwoord in</h2>
+  <input type="password" id="passwordInput" placeholder="Wachtwoord">
+  <button onclick="checkPassword()">Login</button>
+  <div class="error" id="loginError"></div>
+</div>
+
 <div class="wrapper">
   <div class="sidebar">
     <div class="logo">BOEF Control Dashboard</div>
@@ -101,14 +120,26 @@ label{font-size:14px;}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// 🔑 Wachtwoord
+const PASSWORD = "Nattekut123";
+function checkPassword(){
+  const input = document.getElementById('passwordInput').value;
+  const errorDiv = document.getElementById('loginError');
+  if(input === PASSWORD){
+    document.getElementById('loginOverlay').style.display = 'none';
+  } else {
+    errorDiv.innerText = "Ongeldig wachtwoord!";
+  }
+}
+
 // Klok
 function startClock(){
   function updateClock(){
-    const now=new Date();
-    const h=String(now.getHours()).padStart(2,'0');
-    const m=String(now.getMinutes()).padStart(2,'0');
-    const s=String(now.getSeconds()).padStart(2,'0');
-    document.getElementById('clock').innerText=`${h}:${m}:${s}`;
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').innerText = `${h}:${m}:${s}`;
     requestAnimationFrame(updateClock);
   }
   updateClock();
@@ -124,6 +155,8 @@ function showPage(id){
     document.getElementById("categoryLoops").style.display="none";
   }
 }
+
+// ==================== COMPLETE LOOPS SCRIPT ====================
 
 // Loop data – 4 loops per categorie
 const categories={
@@ -286,14 +319,8 @@ const categories={
   ]
 };
 
-let categoryPopups={};
-let categoryTimers={};
-let categoryIndexes={};
-let bars={};
-let autoOpenTimers={};
-let countdownIntervals={};
+let categoryPopups={}, categoryTimers={}, categoryIndexes={}, bars={}, autoOpenTimers={}, countdownIntervals={};
 
-// Toon categorie loops
 function showCategory(catId){
   document.getElementById("loopCategories").style.display="none";
   const container=document.getElementById("categoryLoops");
